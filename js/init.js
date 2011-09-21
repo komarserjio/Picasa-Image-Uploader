@@ -2,14 +2,11 @@ var PIU = {
 
     targetImage: {},
 
-    filesystem: {},
-
     progressIntervalId: null,
     
     googleUsername: '',
 
     options: {
-        filesize: 5242880, // 5 MB
         picasaIndexUrl: 'http://picasaweb.google.com/',
         picasaApiUrl: 'https://picasaweb.google.com/data/feed/api/user/'
     },
@@ -18,14 +15,10 @@ var PIU = {
         chrome.browserAction.onClicked.addListener(function(tab) {
             // show options
         });
-        this.initFileSystem();
         this.initContextMenu();
         this.initTitle();
     },
 
-    initFileSystem: function() {
-        window.requestFileSystem(window.PERSISTENT, this.options.filesize, this.onInitFileSystem, this.errorHandler);
-    },
 
     initContextMenu: function() {
         chrome.contextMenus.create({
@@ -42,37 +35,6 @@ var PIU = {
 
     initTitle: function() {
         chrome.browserAction.setTitle({title: 'Picasa Image Uploader'})
-    },
-
-    onInitFileSystem: function(fs) {
-        console.log('Opened file system: ' + fs.name);
-        PIU.filesystem = fs;                  
-    },
-
-    errorHandler: function(e) {
-      var msg = '';
-      console.log(e);
-      switch (e.code) {
-          case FileError.QUOTA_EXCEEDED_ERR:
-              msg = 'QUOTA_EXCEEDED_ERR';
-              break;
-          case FileError.NOT_FOUND_ERR:
-              msg = 'NOT_FOUND_ERR';
-              break;
-          case FileError.SECURITY_ERR:
-              msg = 'SECURITY_ERR';
-              break;
-          case FileError.INVALID_MODIFICATION_ERR:
-              msg = 'INVALID_MODIFICATION_ERR';
-              break;
-          case FileError.INVALID_STATE_ERR:
-              msg = 'INVALID_STATE_ERR';
-              break;
-          default:
-              msg = 'Unknown Error';
-              break;
-      };
-      console.log('Error: ' + msg);
     },
                       
     findGoogleUsername: function(callback) {
@@ -94,88 +56,40 @@ var PIU = {
             console.log(username);
 
             PIU.googleUsername = username;
-            callback(PIU.saveImageOnPicasa);
+            callback();
         }
         xhr.send();
     },
 
-    saveImageLocally: function(callback) {
-        var fs = PIU.filesystem;
-        fs.root.getFile(PIU.targetImage.name, {
-            create: true
-        }, function(fileEntry) {
-            // Create a FileWriter object for our FileEntry (log.txt).
-            fileEntry.createWriter(function(fileWriter) {
+    sendToPicasa: function() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', PIU.targetImage.path, true);
+        xhr.responseType = 'arraybuffer';
 
-                fileWriter.onwriteend = function(e) {
-                    console.log('Write completed.');
-                    callback();
-                };
-
-                fileWriter.onerror = function(e) {
-                    console.log('Write failed: ' + e.toString());
-                };
-
-                var bb = new window.WebKitBlobBuilder();
+        xhr.onload = function(e) {
+            if (this.status == 200) {
+                console.log(this.response);
                 
-                var xhr = new XMLHttpRequest();
-                xhr.open('GET', PIU.targetImage.path, true);
-                xhr.responseType = 'arraybuffer';
-
+                var xhr = new XMLHttpRequest();    
+                xhr.open('POST', PIU.options.picasaApiUrl + PIU.googleUsername + '/', true);
+                xhr.setRequestHeader("Content-Type", PIU.targetImage.contentType);
+    
                 xhr.onload = function(e) {
-                    if (this.status == 200) {
-                        var bb = new window.WebKitBlobBuilder();
-                        bb.append(this.response); 
-                        console.log(this.response);
-                        var blob = bb.getBlob(PIU.targetImage.contentType);
-                        console.log(blob);
-                        fileWriter.write(blob);
-                    }
+                    console.log(this.status);
+                    console.log(this.responseText);
+                    PIU.stopProgressBar();
                 };
-                xhr.send();
-
-            }, PIU.errorHandler);
-
-        }, PIU.errorHandler);
-    },
-
-    saveImageOnPicasa: function() {
-        var fs = PIU.filesystem;
-        fs.root.getFile(PIU.targetImage.name, {}, function(fileEntry) {
-            fileEntry.file(function(file) {
-                var reader = new FileReader();
-
-                reader.onloadend = function(e) {
-                    var binaryImage = this.result;
-                    console.log(this.result);
-                    var xhr = new XMLHttpRequest();    
-                    xhr.open('POST', PIU.options.picasaApiUrl + PIU.googleUsername + '/', true);
-                    xhr.setRequestHeader("Content-Type", PIU.targetImage.contentType);
-        
-                    xhr.onload = function(e) {
-                        console.log(this.status);
-                        console.log(this.responseText);
-                        PIU.stopProgressBar();
-                    };
-
-                    var bb = new window.WebKitBlobBuilder();
-                    bb.append(this.result);
-                    console.log(bb);
-                    
-                    xhr.send(bb.getBlob());
-                };
-
-                reader.readAsArrayBuffer(file);
-            }, PIU.errorHandler);
-
-        }, PIU.errorHandler);
-                       
+                
+                xhr.send(this.response);
+            }
+        };
+        xhr.send();
     },
 
     process: function() {
         this.startProgressBar();
         // chain of callbacks started here
-        this.findGoogleUsername(this.saveImageLocally);
+        this.findGoogleUsername(this.sendToPicasa);
     },
 
     prepareTargetImage: function (image) {
