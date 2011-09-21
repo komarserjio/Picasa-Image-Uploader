@@ -5,10 +5,21 @@
     "browser_action": {
         "default_icon": "img/icon.png"
     },
+    // author http://saviourmachine.deviantart.com/
+    "icons" : {
+        "16": "img/icon.png",
+        "48": "img/icon.png",
+        "128": "img/icon.png",
+        "256": "img/icon.png",
+        "32": "img/icon.png"
+    },
     "background_page": "html/background.html",
     "permissions": [
         "plugins",
         "contextMenus",
-        "https://picasaweb.google.com"
+        "unlimitedStorage",
+        "https://picasaweb.google.com",
+        "http://*/",
+        "https://*/"
     ]
 }
