@@ -1,10 +1,12 @@
 var PIU = {
 
-    targetImage: {},
+    targetImage: null,
 
     progressIntervalId: null,
     
-    googleUsername: '',
+    googleUsername: null,
+    
+    isUploadingNow: false,
 
     options: {
         picasaIndexUrl: 'http://picasaweb.google.com/',
@@ -26,6 +28,10 @@ var PIU = {
             "type" : "normal",
             "contexts" : ["image"],
             "onclick" : function(info, tab) {
+                if (PIU.isUploadingNow) {
+                    alert("Please wait until previous image will be uploaded.");
+                    return;
+                }
                 var image = info.srcUrl;
                 PIU.prepareTargetImage(image);
                 PIU.process();
@@ -138,6 +144,7 @@ var PIU = {
         }, 500);
 
         this.progressIntervalId = intervalId;
+        this.isUploadingNow = true;
     },
 
     stopProgressBar: function() {
@@ -146,6 +153,7 @@ var PIU = {
             chrome.browserAction.setBadgeText({text: ''});
         }, 2000);
         clearInterval(this.progressIntervalId);
+        this.isUploadingNow = false;
     }
 
 }
