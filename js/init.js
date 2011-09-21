@@ -34,13 +34,7 @@ var PIU = {
             "contexts" : ["image"],
             "onclick" : function(info, tab) {
                 var image = info.srcUrl;
-                var name = image.split('/').pop();
-
-                PIU.targetImage = {
-                    path: image,
-                    name: name
-                }
-
+                PIU.prepareTargetImage(image);
                 PIU.process();
             }
         });
@@ -82,7 +76,6 @@ var PIU = {
     },
                       
     findGoogleUsername: function(callback) {
-        //logic
         var xhr = new XMLHttpRequest();
         xhr.open('GET', this.options.picasaIndexUrl, true);
         xhr.onload = function(e) {
@@ -123,7 +116,7 @@ var PIU = {
                     console.log('Write failed: ' + e.toString());
                 };
 
-                var bb = new window.WebKitBlobBuilder(); // Note: window.WebKitBlobBuilder in Chrome 12.
+                var bb = new window.WebKitBlobBuilder();
                 
                 var xhr = new XMLHttpRequest();
                 xhr.open('GET', PIU.targetImage.path, true);
@@ -132,9 +125,9 @@ var PIU = {
                 xhr.onload = function(e) {
                     if (this.status == 200) {
                         var bb = new window.WebKitBlobBuilder();
-                        bb.append(this.response); // Внимание: НЕ xhr.responseText
+                        bb.append(this.response); 
                         console.log(this.response);
-                        var blob = bb.getBlob('image/jpeg');
+                        var blob = bb.getBlob(PIU.targetImage.contentType);
                         console.log(blob);
                         fileWriter.write(blob);
                     }
@@ -157,7 +150,7 @@ var PIU = {
                     console.log(this.result);
                     var xhr = new XMLHttpRequest();    
                     xhr.open('POST', PIU.options.picasaApiUrl + PIU.googleUsername + '/', true);
-                    xhr.setRequestHeader("Content-Type", "image/jpeg");
+                    xhr.setRequestHeader("Content-Type", PIU.targetImage.contentType);
         
                     xhr.onload = function(e) {
                         console.log(this.status);
@@ -183,6 +176,31 @@ var PIU = {
         this.startProgressBar();
         // chain of callbacks started here
         this.findGoogleUsername(this.saveImageLocally);
+    },
+
+    prepareTargetImage: function (image) {
+        var name = image.split('/').pop();
+        var nameParts = name.split(".");
+        var contentType = '';
+        switch (nameParts[1]) {
+            case 'png':
+                contentType = 'image/png';
+                break;
+            case 'gif':
+                contentType = 'image/gif';
+                break;
+            case 'bmp':
+                contentType = 'image/bmp';
+                break;
+            default: 
+                contentType = 'image/jpeg';
+                break;
+        }
+        this.targetImage = {
+            path: image,
+            name: name,
+            contentType: contentType
+        }
     },
 
     startProgressBar: function() {
