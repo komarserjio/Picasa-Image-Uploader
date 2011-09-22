@@ -15,6 +15,9 @@ var PIU = {
 
     init: function() {
         chrome.browserAction.onClicked.addListener(function(tab) {
+            chrome.tabs.create({
+                url: PIU.options.picasaIndexUrl    
+            });
         });
         this.initContextMenu();
         this.initTitle();
