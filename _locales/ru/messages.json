@@ -1,0 +1,23 @@
+{
+    "extensionName": {
+        "message": "Picasa Image Uploader",
+        "description": "Extension name"            
+    },
+    "extensionDescription": {
+        "message": "Сохраняйте изображения из веба напрямую в ваши picasa альбомы.",
+        "description": "Extension description"            
+    },
+    "loginMessage": {
+        "message": "Вы должны быть авторизированы в google",
+        "description": "Message for unsigned users"            
+    },
+    "waitMessage": {
+        "message": "Подождите пока сохраниться предыдущее изображение",
+        "description": "Message if user try to save more than one image at the same time"            
+    },
+    "menuItemName": {
+        "message": "Сохранить в Picasa",
+        "description": "ContextMenu item name"            
+    }
+}
+

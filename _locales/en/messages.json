@@ -1,0 +1,22 @@
+{
+    "extensionName": {
+        "message": "Picasa Image Uploader",
+        "description": "Extension name"            
+    },
+    "extensionDescription": {
+        "message": "Save images from web directly to your picasa web albums.",
+        "description": "Extension description"            
+    },
+    "loginMessage": {
+        "message": "Please sign in to your google account",
+        "description": "Message for unsigned users"            
+    },
+    "waitMessage": {
+        "message": "Please wait until previous image will be uploaded.",
+        "description": "Message if user try to save more than one image at the same time"            
+    },
+    "menuItemName": {
+        "message": "Save in Picasa",
+        "description": "ContextMenu item name"            
+    }
+}
