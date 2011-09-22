@@ -4,3 +4,13 @@ Extension for Google Chrome browser.
 
 Save images from web directly to your picasa web albums.
 Supported formats: jpg, png, gif, bmp.
+
+How to use:
+Right click on image and click on "Save in Picasa" item in context menu.
+
+
+
+Third party components:
+Icons by Chris Scholten (http://saviourmachine.deviantart.com)
+jQuery library (http://jquery.com)
+jGrowl plugin for notifications (http://stanlemon.net/projects/jgrowl.html)

@@ -1,8 +1,8 @@
 {
-    "name": "Picasa Image Uploader",
+    "name": "__MSG_extensionName__",
     "version": "1.0",
-    "description": "Save images from web directly to your picasa web albums.",
-    //"default_locale": "en",
+    "description": "__MSG_extensionDescription__",
+    "default_locale": "en",
     "browser_action": {
         "default_icon": "img/icon.png"
     },

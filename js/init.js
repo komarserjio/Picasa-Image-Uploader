@@ -26,12 +26,12 @@ var PIU = {
 
     initContextMenu: function() {
         chrome.contextMenus.create({
-            "title" : "Save in Picasa",
+            "title" : chrome.i18n.getMessage("menuItemName"),
             "type" : "normal",
             "contexts" : ["image"],
             "onclick" : function(info, tab) {
                 if (PIU.isUploadingNow) {
-                    PIU.showNotifier("Please wait until previous image will be uploaded.");
+                    PIU.showNotifier(chrome.i18n.getMessage("waitMessage"));
                     return;
                 }
                 var image = info.srcUrl;
@@ -42,7 +42,7 @@ var PIU = {
     },
 
     initTitle: function() {
-        chrome.browserAction.setTitle({title: 'Picasa Image Uploader'})
+        chrome.browserAction.setTitle({title: chrome.i18n.getMessage("extensionName")})
     },
 
     showNotifier: function(message) {
@@ -59,7 +59,7 @@ var PIU = {
             // brutal method to find username :)
             var pos = this.response.search('[a-zA-Z0-9.]+@gmail.com');
             if (pos < 0) {
-                PIU.showNotifier("Please sign in to your google account");
+                PIU.showNotifier(chrome.i18n.getMessage("loginMessage"));
                 PIU.stopProgressBar(false);
                 return;
             }
