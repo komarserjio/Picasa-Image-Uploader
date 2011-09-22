@@ -15,7 +15,6 @@ var PIU = {
 
     init: function() {
         chrome.browserAction.onClicked.addListener(function(tab) {
-            // show options
         });
         this.initContextMenu();
         this.initTitle();
@@ -29,7 +28,7 @@ var PIU = {
             "contexts" : ["image"],
             "onclick" : function(info, tab) {
                 if (PIU.isUploadingNow) {
-                    alert("Please wait until previous image will be uploaded.");
+                    PIU.showNotifier("Please wait until previous image will be uploaded.");
                     return;
                 }
                 var image = info.srcUrl;
@@ -42,6 +41,13 @@ var PIU = {
     initTitle: function() {
         chrome.browserAction.setTitle({title: 'Picasa Image Uploader'})
     },
+
+    showNotifier: function(message) {
+        chrome.tabs.getSelected(null, function(tab) {
+            // send request to content script
+            chrome.tabs.sendRequest(tab.id, {message: message}, function(response) {});
+        });
+    },
                       
     findGoogleUsername: function(callback) {
         var xhr = new XMLHttpRequest();
@@ -50,9 +56,8 @@ var PIU = {
             // brutal method to find username :)
             var pos = this.response.search('[a-zA-Z0-9.]+@gmail.com');
             if (pos < 0) {
-                // XXX replace alert with popup
-                alert('You are not logined');
-                PIU.stopProgressBar();
+                PIU.showNotifier("Please sign in to your google account");
+                PIU.stopProgressBar(false);
                 return;
             }
             var substring = this.response.substr(pos, 100);
@@ -83,7 +88,7 @@ var PIU = {
                 xhr.onload = function(e) {
                     console.log(this.status);
                     console.log(this.responseText);
-                    PIU.stopProgressBar();
+                    PIU.stopProgressBar(true);
                 };
                 
                 xhr.send(this.response);
@@ -147,8 +152,11 @@ var PIU = {
         this.isUploadingNow = true;
     },
 
-    stopProgressBar: function() {
-        chrome.browserAction.setBadgeText({text: 'Done'});
+    stopProgressBar: function(success) {
+        // show success title only if operation was successfull 
+        if (success) {
+            chrome.browserAction.setBadgeText({text: 'Done'});
+        };
         setTimeout(function(){
             chrome.browserAction.setBadgeText({text: ''});
         }, 2000);
