@@ -10,17 +10,25 @@ var PIU = {
 
     options: {
         picasaIndexUrl: 'http://picasaweb.google.com/',
-        picasaApiUrl: 'https://picasaweb.google.com/data/feed/api/user/'
+        picasaApiUrl: 'https://picasaweb.google.com/data/feed/api/user/',
+        loginNotifierDelay: 3000,
+        waitNotifierDelay: 3000,
+        successNotifierDelay: 1500,
+        errorNotifierDelay: 4000
     },
 
     init: function() {
+        this.initOnClickHandler();
+        this.initContextMenu();
+        this.initTitle();
+    },
+
+    initOnClickHandler: function () {
         chrome.browserAction.onClicked.addListener(function(tab) {
             chrome.tabs.create({
                 url: PIU.options.picasaIndexUrl    
             });
         });
-        this.initContextMenu();
-        this.initTitle();
     },
 
 
@@ -31,7 +39,10 @@ var PIU = {
             "contexts" : ["image"],
             "onclick" : function(info, tab) {
                 if (PIU.isUploadingNow) {
-                    PIU.showNotifier(chrome.i18n.getMessage("waitMessage"));
+                    PIU.showNotifier({
+                        message: chrome.i18n.getMessage("waitMessage"),
+                        delay: PIU.options.notifierDelay
+                    });
                     return;
                 }
                 var image = info.srcUrl;
@@ -45,10 +56,10 @@ var PIU = {
         chrome.browserAction.setTitle({title: chrome.i18n.getMessage("extensionName")})
     },
 
-    showNotifier: function(message) {
+    showNotifier: function(notifyData) {
         chrome.tabs.getSelected(null, function(tab) {
             // send request to content script
-            chrome.tabs.sendRequest(tab.id, {message: message}, function(response) {});
+            chrome.tabs.sendRequest(tab.id, notifyData, function(response) {});
         });
     },
                       
@@ -59,15 +70,16 @@ var PIU = {
             // brutal method to find username :)
             var pos = this.response.search('[a-zA-Z0-9.]+@gmail.com');
             if (pos < 0) {
-                PIU.showNotifier(chrome.i18n.getMessage("loginMessage"));
+                PIU.showNotifier({
+                    message: chrome.i18n.getMessage("loginMessage"),
+                    delay: PIU.options.loginNotifierDelay
+                });
                 PIU.stopProgressBar(false);
                 return;
             }
             var substring = this.response.substr(pos, 100);
             var atPosition = substring.indexOf('@');
             var username = substring.substr(0, atPosition);
-
-            console.log(username);
 
             PIU.googleUsername = username;
             callback();
@@ -82,22 +94,40 @@ var PIU = {
 
         xhr.onload = function(e) {
             if (this.status == 200) {
-                console.log(this.response);
                 
                 var xhr = new XMLHttpRequest();    
                 xhr.open('POST', PIU.options.picasaApiUrl + PIU.googleUsername + '/', true);
                 xhr.setRequestHeader("Content-Type", PIU.targetImage.contentType);
     
                 xhr.onload = function(e) {
-                    console.log(this.status);
-                    console.log(this.responseText);
-                    PIU.stopProgressBar(true);
+                    PIU.analyzeResponse(this);
                 };
                 
                 xhr.send(this.response);
+            } else {
+                // show notify about fail
             }
         };
         xhr.send();
+    },
+
+    analyzeResponse: function(response) {
+        var isSuccess;
+        if (response.status == 201) {
+            isSuccess = true;
+            PIU.showNotifier({
+                message: chrome.i18n.getMessage("successMessage"),
+                delay: PIU.options.successNotifierDelay        
+            });
+        } else {
+            isSuccess = false;
+            PIU.showNotifier({
+                message: chrome.i18n.getMessage("errorMessage"),
+                delay: PIU.options.errorNotifierDelay        
+            });
+        }
+
+        PIU.stopProgressBar(isSuccess);
     },
 
     process: function() {

@@ -18,6 +18,14 @@
     "menuItemName": {
         "message": "Сохранить в Picasa",
         "description": "ContextMenu item name"            
+    },
+    "successMessage": {
+        "message": "Изображение успешно сохранено",
+        "description": "Message if image is successfully uploaded"            
+    },
+    "errorMessage": {
+        "message": "Невозможно сохранить изображение",
+        "description": "Message if image is not uploaded because of error"            
     }
 }
 
