@@ -8,6 +8,8 @@ var PIU = {
     
     isUploadingNow: false,
 
+    queue: null,
+
     options: {
         picasaIndexUrl: 'http://picasaweb.google.com/',
         picasaApiUrl: 'https://picasaweb.google.com/data/feed/api/user/',
@@ -67,22 +69,28 @@ var PIU = {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', this.options.picasaIndexUrl, true);
         xhr.onload = function(e) {
+            var pos = this.response.search('rel="author"');
+            var str = this.response.substr(pos - 60, 80);
+            var pattern = /[0-9]+/g;
+            var str2 = pattern.exec(str);
+            console.log(str2);
             // brutal method to find username :)
-            var pos = this.response.search('[a-zA-Z0-9.]+@gmail.com');
-            if (pos < 0) {
-                PIU.showNotifier({
-                    message: chrome.i18n.getMessage("loginMessage"),
-                    delay: PIU.options.loginNotifierDelay
-                });
-                PIU.stopProgressBar(false);
-                return;
-            }
-            var substring = this.response.substr(pos, 100);
-            var atPosition = substring.indexOf('@');
-            var username = substring.substr(0, atPosition);
+            //var pos = this.response.search('[a-zA-Z0-9.]+@[a-zA-Z0-9]+.[a-z]+');
+            //if (pos < 0) {
+                //PIU.showNotifier({
+                    //message: chrome.i18n.getMessage("loginMessage"),
+                    //delay: PIU.options.loginNotifierDelay
+                //});
+                //PIU.stopProgressBar(false);
+                //return;
+            //}
+            //var substring = this.response.substr(pos, 100);
+            //var atPosition = substring.indexOf('@');
+            //var username = substring.substr(0, atPosition);
+            //console.log(username);
 
-            PIU.googleUsername = username;
-            callback();
+            //PIU.googleUsername = username;
+            //callback();
         }
         xhr.send();
     },
