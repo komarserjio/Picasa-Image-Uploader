@@ -14,7 +14,7 @@ var PIU = {
         loginNotifierDelay: 3000,
         waitNotifierDelay: 3000,
         successNotifierDelay: 1500,
-        errorNotifierDelay: 4000
+        errorNotifierDelay: 5000
     },
 
     init: function() {
@@ -67,9 +67,24 @@ var PIU = {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', this.options.picasaIndexUrl, true);
         xhr.onload = function(e) {
-            // brutal method to find username :)
-            var pos = this.response.search('[a-zA-Z0-9.]+@gmail.com');
-            if (pos < 0) {
+            // attemp to determine username (google id)
+            var username = 0;
+            var pos = this.response.search('rel="author"');
+            var pattern = /https:\/\/picasaweb\.google\.com\/[0-9]+/
+            var pieceOfHtml = this.response.substr(pos, 150);
+            var matches = pattern.exec(pieceOfHtml);
+            if (matches != null) {
+                var idPattern = /[0-9]+/
+                var idMatches = idPattern.exec(matches[0]);
+                if (idMatches != null) {
+                    username = idMatches[0];
+                }
+            }
+
+            if (username != 0) {
+                PIU.googleUsername = username;
+                callback();
+            } else {
                 PIU.showNotifier({
                     message: chrome.i18n.getMessage("loginMessage"),
                     delay: PIU.options.loginNotifierDelay
@@ -77,12 +92,6 @@ var PIU = {
                 PIU.stopProgressBar(false);
                 return;
             }
-            var substring = this.response.substr(pos, 100);
-            var atPosition = substring.indexOf('@');
-            var username = substring.substr(0, atPosition);
-
-            PIU.googleUsername = username;
-            callback();
         }
         xhr.send();
     },

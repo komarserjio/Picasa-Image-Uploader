@@ -8,7 +8,7 @@
         "description": "Extension description"            
     },
     "loginMessage": {
-        "message": "Please sign in to your google account",
+        "message": "Maybe you are signed out or you do not have public google profile.",
         "description": "Message for unsigned users"            
     },
     "waitMessage": {
